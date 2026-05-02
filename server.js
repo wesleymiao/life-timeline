@@ -77,11 +77,11 @@ app.use(requireAuth);
 
 // Static files
 app.use('/static', express.static(path.join(__dirname, 'public')));
-app.use('/photos', express.static(path.join(__dirname, '..', 'photos')));
+app.use('/photos', express.static(path.join(__dirname, 'photos')));
 
 // API endpoints
 app.get('/api/days', (req, res) => {
-  const daysDir = path.join(__dirname, '..', 'data', 'days');
+  const daysDir = path.join(__dirname, 'data', 'days');
   if (!fs.existsSync(daysDir)) return res.json([]);
   const files = fs.readdirSync(daysDir).filter(f => f.endsWith('.json')).sort().reverse();
   const days = files.map(f => {
@@ -92,13 +92,13 @@ app.get('/api/days', (req, res) => {
 });
 
 app.get('/api/day/:date', (req, res) => {
-  const file = path.join(__dirname, '..', 'data', 'days', `${req.params.date}.json`);
+  const file = path.join(__dirname, 'data', 'days', `${req.params.date}.json`);
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'not found' });
   res.json(JSON.parse(fs.readFileSync(file, 'utf-8')));
 });
 
 app.get('/api/month/:month', (req, res) => {
-  const daysDir = path.join(__dirname, '..', 'data', 'days');
+  const daysDir = path.join(__dirname, 'data', 'days');
   if (!fs.existsSync(daysDir)) return res.json({ month: req.params.month, days: [] });
   const files = fs.readdirSync(daysDir).filter(f => f.startsWith(req.params.month)).sort();
   const days = files.map(f => JSON.parse(fs.readFileSync(path.join(daysDir, f), 'utf-8')));
@@ -107,7 +107,7 @@ app.get('/api/month/:month', (req, res) => {
 
 app.get('/api/week/:date', (req, res) => {
   const startDate = new Date(req.params.date);
-  const daysDir = path.join(__dirname, '..', 'data', 'days');
+  const daysDir = path.join(__dirname, 'data', 'days');
   if (!fs.existsSync(daysDir)) return res.json({ week_start: req.params.date, days: [] });
   const days = [];
   for (let i = 0; i < 7; i++) {
@@ -121,7 +121,7 @@ app.get('/api/week/:date', (req, res) => {
 });
 
 app.get('/api/summaries', (req, res) => {
-  const summariesDir = path.join(__dirname, '..', 'data', 'summaries');
+  const summariesDir = path.join(__dirname, 'data', 'summaries');
   if (!fs.existsSync(summariesDir)) return res.json({ weeks: [], months: [] });
   const files = fs.readdirSync(summariesDir).filter(f => f.endsWith('.json'));
   const weeks = [], months = [];
