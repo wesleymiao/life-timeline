@@ -133,6 +133,52 @@ app.get('/api/summaries', (req, res) => {
   res.json({ weeks: weeks.sort((a,b) => b.period.localeCompare(a.period)), months: months.sort((a,b) => b.period.localeCompare(a.period)) });
 });
 
+// Comments API
+const commentsFile = path.join(__dirname, 'data', 'comments.json');
+
+function loadComments() {
+  if (!fs.existsSync(commentsFile)) return {};
+  return JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
+}
+
+function saveComments(comments) {
+  fs.writeFileSync(commentsFile, JSON.stringify(comments, null, 2));
+}
+
+app.get('/api/comments/:date', (req, res) => {
+  const comments = loadComments();
+  res.json(comments[req.params.date] || []);
+});
+
+app.post('/api/comments/:date', (req, res) => {
+  const { date } = req.params;
+  const { photoIndex, text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error: 'text required' });
+
+  const comments = loadComments();
+  if (!comments[date]) comments[date] = [];
+  const comment = {
+    id: Date.now().toString(36),
+    photoIndex: photoIndex ?? null,
+    text: text.trim(),
+    created_at: new Date().toISOString(),
+    processed: false
+  };
+  comments[date].push(comment);
+  saveComments(comments);
+  res.json(comment);
+});
+
+app.delete('/api/comments/:date/:id', (req, res) => {
+  const { date, id } = req.params;
+  const comments = loadComments();
+  if (!comments[date]) return res.status(404).json({ error: 'not found' });
+  comments[date] = comments[date].filter(c => c.id !== id);
+  if (!comments[date].length) delete comments[date];
+  saveComments(comments);
+  res.json({ ok: true });
+});
+
 // Main SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

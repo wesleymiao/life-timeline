@@ -15,9 +15,6 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .nav button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:.9rem;transition:all .2s}
 .nav button:hover,.nav button.active{background:rgba(255,255,255,.35)}
 .container{max-width:900px;margin:0 auto;padding:1rem}
-.month-selector{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;flex-wrap:wrap}
-.month-selector select{padding:8px 16px;border:2px solid var(--border);border-radius:8px;font-size:1rem;background:#fff}
-.month-selector button{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer}
 .day-card{background:var(--card);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .2s}
 .day-card:hover{transform:translateY(-2px)}
 .day-date{font-size:1.3rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
@@ -31,36 +28,64 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .photo-item:hover img{transform:scale(1.05)}
 .photo-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;padding:2rem .75rem .75rem;font-size:.8rem}
 .photo-time{font-weight:600;margin-bottom:2px}
+.photo-comment-badge{position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .highlights{background:linear-gradient(135deg,#fff3cd,#ffeaa7);padding:1rem;border-radius:12px;margin-bottom:1rem}
 .highlights h4{color:#f39c12;margin-bottom:.5rem;font-size:.9rem}
 .highlights li{margin-left:1.2rem;color:#666;font-size:.9rem}
 .week-summary,.month-summary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:16px;padding:2rem;margin-bottom:1.5rem}
 .week-summary h3,.month-summary h3{margin-bottom:.5rem}
-.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:1rem}
 .lightbox.show{display:flex}
-.lightbox img{max-width:95%;max-height:90vh;border-radius:8px;object-fit:contain}
-.lightbox .close{position:absolute;top:1rem;right:1rem;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none}
-.lightbox .info{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);color:#fff;text-align:center;max-width:600px;padding:1rem;background:rgba(0,0,0,.5);border-radius:12px}
+.lightbox img{max-width:95%;max-height:60vh;border-radius:8px;object-fit:contain}
+.lightbox .close{position:absolute;top:1rem;right:1rem;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;z-index:1001}
+.lightbox .lb-bottom{position:absolute;bottom:0;left:0;right:0;max-height:35vh;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;align-items:center}
+.lightbox .info{color:#fff;text-align:center;max-width:600px;padding:.75rem 1rem;background:rgba(0,0,0,.5);border-radius:12px 12px 0 0;width:100%;max-width:600px}
+.lb-comments{width:100%;max-width:600px;background:rgba(30,30,30,.85);border-radius:0 0 12px 12px;padding:.75rem 1rem}
+.lb-comments .comment-item{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);color:#eee;font-size:.85rem}
+.lb-comments .comment-item:last-child{border-bottom:none}
+.lb-comments .comment-text{flex:1}
+.lb-comments .comment-delete{background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:.75rem;padding:2px 6px;opacity:.6;white-space:nowrap}
+.lb-comments .comment-delete:hover{opacity:1}
+.comment-form{display:flex;gap:.5rem;margin-top:.5rem}
+.comment-form input{flex:1;padding:8px 12px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font-size:.85rem;outline:none}
+.comment-form input::placeholder{color:rgba(255,255,255,.4)}
+.comment-form input:focus{border-color:var(--accent)}
+.comment-form button{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;white-space:nowrap}
+.day-comments{margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.day-comments h4{font-size:.9rem;color:var(--text2);margin-bottom:.5rem}
+.day-comment-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg);border-radius:8px;margin-bottom:4px;font-size:.85rem}
+.day-comment-item .photo-ref{color:var(--accent);font-size:.75rem;margin-right:.5rem}
+.day-comment-item .comment-delete{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:.75rem;opacity:.5}
+.day-comment-item .comment-delete:hover{opacity:1}
+.day-comment-form{display:flex;gap:.5rem;margin-top:.5rem}
+.day-comment-form input{flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:.85rem;outline:none}
+.day-comment-form input:focus{border-color:var(--accent)}
+.day-comment-form button{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.85rem}
 .loading{text-align:center;padding:3rem;color:var(--text2)}
 .empty{text-align:center;padding:3rem;color:var(--text2)}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin:1rem 0}
 .stat{text-align:center;padding:1rem;background:rgba(255,255,255,.15);border-radius:12px}
 .stat .num{font-size:1.8rem;font-weight:700}
 .stat .label{font-size:.8rem;opacity:.8}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;font-size:2rem;padding:12px 16px;cursor:pointer;border-radius:8px;z-index:1001}
+.lb-nav:hover{background:rgba(255,255,255,.3)}
+.lb-prev{left:1rem}
+.lb-next{right:1rem}
 @media(max-width:600px){
   .photo-grid{grid-template-columns:repeat(2,1fr)}
   .header h1{font-size:1.4rem}
+  .lb-nav{padding:8px 12px;font-size:1.5rem}
 }
 </style>
 </head>
 <body>
 <div class="header">
-  <h1>🌟 Wesley's Life Timeline</h1>
+  <h1>Wesley's Life Timeline</h1>
   <p>用照片记录每一天的精彩</p>
   <div class="nav">
-    <button class="active" onclick="showView('timeline')">📅 时间线</button>
-    <button onclick="showView('weekly')">📊 周视图</button>
-    <button onclick="showView('monthly')">📆 月视图</button>
+    <button class="active" onclick="showView('timeline')">时间线</button>
+    <button onclick="showView('weekly')">周视图</button>
+    <button onclick="showView('monthly')">月视图</button>
   </div>
 </div>
 
@@ -68,21 +93,34 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
   <div class="loading">加载中...</div>
 </div>
 
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+<div class="lightbox" id="lightbox">
   <button class="close" onclick="closeLightbox()">&times;</button>
-  <img id="lb-img" src="">
-  <div class="info" id="lb-info"></div>
+  <button class="lb-nav lb-prev" onclick="navLightbox(-1);event.stopPropagation()">&#8249;</button>
+  <button class="lb-nav lb-next" onclick="navLightbox(1);event.stopPropagation()">&#8250;</button>
+  <img id="lb-img" src="" onclick="event.stopPropagation()">
+  <div class="lb-bottom" onclick="event.stopPropagation()">
+    <div class="info" id="lb-info"></div>
+    <div class="lb-comments" id="lb-comments"></div>
+  </div>
 </div>
 
 <script>
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
 let allDays = [];
 let currentView = 'timeline';
+let commentsCache = {};
+let currentLbDate = null, currentLbIndex = null, currentLbPhotos = [];
 
 async function fetchJSON(url) {
   const r = await fetch(url);
   if (!r.ok) return null;
   return r.json();
+}
+
+async function loadComments(date) {
+  if (commentsCache[date]) return commentsCache[date];
+  commentsCache[date] = await fetchJSON(`/api/comments/${date}`) || [];
+  return commentsCache[date];
 }
 
 async function init() {
@@ -103,55 +141,190 @@ function showView(view) {
 function renderTimeline() {
   if (!allDays.length) { document.getElementById('content').innerHTML = '<div class="empty">暂无数据</div>'; return; }
   let html = '';
-  allDays.forEach(day => {
-    html += renderDayCard(day, false);
-  });
+  allDays.forEach(day => html += renderDayCard(day));
   document.getElementById('content').innerHTML = html;
-  // Lazy load full data for each day
   allDays.forEach(day => loadDayPhotos(day.date));
 }
 
-function renderDayCard(day, showPhotos = false) {
+function renderDayCard(day) {
   const d = new Date(day.date + 'T00:00:00');
   const wd = WEEKDAYS[d.getDay()];
   const s = day.summary || {};
   let html = `<div class="day-card" id="day-${day.date}">
-    <div class="day-date">${day.date} <span class="weekday">星期${wd}</span> <span class="weekday">📷 ${day.photo_count}张</span></div>
+    <div class="day-date">${day.date} <span class="weekday">星期${wd}</span> <span class="weekday">${day.photo_count}张</span></div>
     <div class="summary-text">${s.summary || ''}</div>`;
   if (s.highlights?.length) {
-    html += `<div class="highlights"><h4>✨ 亮点</h4><ul>${s.highlights.map(h=>`<li>${h}</li>`).join('')}</ul></div>`;
+    html += `<div class="highlights"><h4>亮点</h4><ul>${s.highlights.map(h=>`<li>${h}</li>`).join('')}</ul></div>`;
   }
   if (s.activities?.length || s.locations?.length) {
     html += '<div class="meta-tags">';
-    (s.activities||[]).forEach(a => html += `<span class="tag">🎯 ${a}</span>`);
-    (s.locations||[]).forEach(l => html += `<span class="tag">📍 ${l}</span>`);
+    (s.activities||[]).forEach(a => html += `<span class="tag">${a}</span>`);
+    (s.locations||[]).forEach(l => html += `<span class="tag">${l}</span>`);
     html += '</div>';
   }
-  html += `<div class="photo-grid" id="photos-${day.date}"></div></div>`;
+  html += `<div class="photo-grid" id="photos-${day.date}"></div>`;
+  html += `<div class="day-comments" id="day-comments-${day.date}"></div>`;
+  html += `</div>`;
   return html;
 }
 
 async function loadDayPhotos(date) {
   const data = await fetchJSON(`/api/day/${date}`);
   if (!data?.photos) return;
+  const comments = await loadComments(date);
   const grid = document.getElementById(`photos-${date}`);
   if (!grid) return;
-  grid.innerHTML = data.photos.map(p => {
+
+  // Store photos for lightbox navigation
+  if (!window._dayPhotos) window._dayPhotos = {};
+  window._dayPhotos[date] = data.photos;
+
+  grid.innerHTML = data.photos.map((p, idx) => {
     const thumbSrc = `/photos/${date}/thumbs/${p.filename}`;
     const fullSrc = `/photos/${date}/${p.filename}`;
     const desc = p.analysis?.description || '';
-    return `<div class="photo-item" onclick="openLightbox('${fullSrc}','${p.time}','${desc.replace(/'/g,"\\'")}')">
+    const photoComments = comments.filter(c => c.photoIndex === idx);
+    const badge = photoComments.length ? `<div class="photo-comment-badge">${photoComments.length}</div>` : '';
+    return `<div class="photo-item" onclick="openLightbox('${date}',${idx})">
       <img src="${thumbSrc}" alt="${desc}" loading="lazy" onerror="this.src='${fullSrc}'">
+      ${badge}
       <div class="photo-caption"><div class="photo-time">${p.time}</div>${p.analysis?.activity||''}</div>
     </div>`;
   }).join('');
+
+  // Render day-level comments section
+  renderDayComments(date, comments);
+}
+
+function renderDayComments(date, comments) {
+  const container = document.getElementById(`day-comments-${date}`);
+  if (!container) return;
+  const dayComments = comments.filter(c => c.photoIndex === null || c.photoIndex === undefined);
+  const photoComments = comments.filter(c => c.photoIndex !== null && c.photoIndex !== undefined);
+
+  let html = '';
+  if (dayComments.length || photoComments.length) {
+    html += `<h4>备注 (${comments.length})</h4>`;
+    comments.forEach(c => {
+      const photoRef = (c.photoIndex !== null && c.photoIndex !== undefined)
+        ? `<span class="photo-ref">[照片${c.photoIndex+1}]</span>` : '';
+      html += `<div class="day-comment-item">
+        <span>${photoRef}${esc(c.text)}</span>
+        <button class="comment-delete" onclick="deleteComment('${date}','${c.id}')">删除</button>
+      </div>`;
+    });
+  }
+  html += `<div class="day-comment-form">
+    <input type="text" placeholder="添加这一天的备注..." onkeydown="if(event.key==='Enter')addDayComment('${date}',this)">
+    <button onclick="addDayComment('${date}',this.previousElementSibling)">添加</button>
+  </div>`;
+  container.innerHTML = html;
+}
+
+async function addDayComment(date, input) {
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  await fetch(`/api/comments/${date}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ text, photoIndex: null })
+  });
+  delete commentsCache[date];
+  const comments = await loadComments(date);
+  renderDayComments(date, comments);
+}
+
+async function deleteComment(date, id) {
+  await fetch(`/api/comments/${date}/${id}`, { method: 'DELETE' });
+  delete commentsCache[date];
+  const comments = await loadComments(date);
+  renderDayComments(date, comments);
+  // If lightbox is open for this date, refresh it too
+  if (currentLbDate === date) renderLbComments();
+  // Refresh photo badges
+  loadDayPhotos(date);
+}
+
+function openLightbox(date, idx) {
+  const photos = window._dayPhotos?.[date];
+  if (!photos) return;
+  currentLbDate = date;
+  currentLbIndex = idx;
+  currentLbPhotos = photos;
+  showLbPhoto();
+  document.getElementById('lightbox').classList.add('show');
+  if (event) event.stopPropagation();
+}
+
+function showLbPhoto() {
+  const p = currentLbPhotos[currentLbIndex];
+  if (!p) return;
+  const fullSrc = `/photos/${currentLbDate}/${p.filename}`;
+  document.getElementById('lb-img').src = fullSrc;
+  const loc = p.analysis?.location ? ` | ${p.analysis.location}` : '';
+  document.getElementById('lb-info').innerHTML =
+    `<strong>${p.time}</strong>${loc}<br>${p.analysis?.description||''}`;
+  renderLbComments();
+}
+
+async function renderLbComments() {
+  const el = document.getElementById('lb-comments');
+  const comments = await loadComments(currentLbDate);
+  const photoComments = comments.filter(c => c.photoIndex === currentLbIndex);
+
+  let html = '';
+  photoComments.forEach(c => {
+    html += `<div class="comment-item">
+      <span class="comment-text">${esc(c.text)}</span>
+      <button class="comment-delete" onclick="deleteComment('${currentLbDate}','${c.id}')">删除</button>
+    </div>`;
+  });
+  html += `<div class="comment-form">
+    <input type="text" id="lb-comment-input" placeholder="添加备注，如：这是我老婆，不是朋友..."
+      onkeydown="if(event.key==='Enter')addLbComment()">
+    <button onclick="addLbComment()">发送</button>
+  </div>`;
+  el.innerHTML = html;
+}
+
+async function addLbComment() {
+  const input = document.getElementById('lb-comment-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  await fetch(`/api/comments/${currentLbDate}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ text, photoIndex: currentLbIndex })
+  });
+  delete commentsCache[currentLbDate];
+  renderLbComments();
+  // Refresh photo badges
+  loadDayPhotos(currentLbDate);
+}
+
+function navLightbox(dir) {
+  const newIdx = currentLbIndex + dir;
+  if (newIdx >= 0 && newIdx < currentLbPhotos.length) {
+    currentLbIndex = newIdx;
+    showLbPhoto();
+  }
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 async function renderWeekly() {
   const content = document.getElementById('content');
-  // Group days into weeks
   if (!allDays.length) { content.innerHTML = '<div class="empty">暂无数据</div>'; return; }
-
   const weeks = {};
   allDays.forEach(day => {
     const d = new Date(day.date + 'T00:00:00');
@@ -161,7 +334,6 @@ async function renderWeekly() {
     if (!weeks[key]) weeks[key] = [];
     weeks[key].push(day);
   });
-
   let html = '';
   Object.keys(weeks).sort().reverse().forEach(weekStart => {
     const days = weeks[weekStart];
@@ -169,21 +341,17 @@ async function renderWeekly() {
     const allActivities = [...new Set(days.flatMap(d => d.summary?.activities || []))];
     const weekEnd = new Date(weekStart + 'T00:00:00');
     weekEnd.setDate(weekEnd.getDate() + 6);
-
     html += `<div class="week-summary">
-      <h3>📊 ${weekStart} ~ ${weekEnd.toISOString().split('T')[0]}</h3>
+      <h3>${weekStart} ~ ${weekEnd.toISOString().split('T')[0]}</h3>
       <div class="stats">
         <div class="stat"><div class="num">${days.length}</div><div class="label">天有记录</div></div>
         <div class="stat"><div class="num">${totalPhotos}</div><div class="label">张照片</div></div>
         <div class="stat"><div class="num">${allActivities.length}</div><div class="label">种活动</div></div>
       </div>
-      <div class="meta-tags" style="margin-top:.5rem">${allActivities.map(a=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">🎯 ${a}</span>`).join('')}</div>
+      <div class="meta-tags" style="margin-top:.5rem">${allActivities.map(a=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">${a}</span>`).join('')}</div>
     </div>`;
-    days.forEach(day => {
-      html += renderDayCard(day);
-    });
+    days.forEach(day => html += renderDayCard(day));
   });
-
   content.innerHTML = html;
   allDays.forEach(day => loadDayPhotos(day.date));
 }
@@ -191,23 +359,20 @@ async function renderWeekly() {
 async function renderMonthly() {
   const content = document.getElementById('content');
   if (!allDays.length) { content.innerHTML = '<div class="empty">暂无数据</div>'; return; }
-
   const months = {};
   allDays.forEach(day => {
     const key = day.date.substring(0, 7);
     if (!months[key]) months[key] = [];
     months[key].push(day);
   });
-
   let html = '';
   Object.keys(months).sort().reverse().forEach(month => {
     const days = months[month];
     const totalPhotos = days.reduce((s,d) => s + d.photo_count, 0);
     const allActivities = [...new Set(days.flatMap(d => d.summary?.activities || []))];
     const allLocations = [...new Set(days.flatMap(d => d.summary?.locations || []))];
-
     html += `<div class="month-summary">
-      <h3>📆 ${month}</h3>
+      <h3>${month}</h3>
       <div class="stats">
         <div class="stat"><div class="num">${days.length}</div><div class="label">天有记录</div></div>
         <div class="stat"><div class="num">${totalPhotos}</div><div class="label">张照片</div></div>
@@ -215,31 +380,24 @@ async function renderMonthly() {
         <div class="stat"><div class="num">${allLocations.length}</div><div class="label">个地点</div></div>
       </div>
       <div class="meta-tags" style="margin-top:.5rem">
-        ${allActivities.map(a=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">🎯 ${a}</span>`).join('')}
-        ${allLocations.slice(0,8).map(l=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">📍 ${l}</span>`).join('')}
+        ${allActivities.map(a=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">${a}</span>`).join('')}
+        ${allLocations.slice(0,8).map(l=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">${l}</span>`).join('')}
       </div>
     </div>`;
-    days.forEach(day => {
-      html += renderDayCard(day);
-    });
+    days.forEach(day => html += renderDayCard(day));
   });
-
   content.innerHTML = html;
   allDays.forEach(day => loadDayPhotos(day.date));
 }
 
-function openLightbox(src, time, desc) {
-  document.getElementById('lb-img').src = src;
-  document.getElementById('lb-info').innerHTML = `<strong>${time}</strong><br>${desc}`;
-  document.getElementById('lightbox').classList.add('show');
-  event.stopPropagation();
-}
-
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('show');
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navLightbox(-1);
+  if (e.key === 'ArrowRight') navLightbox(1);
+});
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+});
 
 init();
 </script>
