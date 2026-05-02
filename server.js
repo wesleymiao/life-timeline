@@ -184,6 +184,55 @@ app.delete('/api/comments/:date/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// Get all unprocessed comments across all dates
+app.get('/api/comments-unprocessed', (req, res) => {
+  const comments = loadComments();
+  const result = {};
+  for (const [date, clist] of Object.entries(comments)) {
+    const unprocessed = clist.filter(c => !c.processed);
+    if (unprocessed.length) result[date] = unprocessed;
+  }
+  res.json(result);
+});
+
+// Mark comments as processed
+app.post('/api/comments-mark-processed', (req, res) => {
+  const { ids } = req.body; // array of { date, id }
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids array required' });
+  const comments = loadComments();
+  for (const { date, id } of ids) {
+    const clist = comments[date];
+    if (clist) {
+      const c = clist.find(x => x.id === id);
+      if (c) c.processed = true;
+    }
+  }
+  saveComments(comments);
+  res.json({ ok: true, marked: ids.length });
+});
+
+// Write/update day data (used by agent after processing)
+app.put('/api/day/:date', (req, res) => {
+  const { date } = req.params;
+  const data = req.body;
+  if (!data || typeof data !== 'object') return res.status(400).json({ error: 'invalid data' });
+  const daysDir = path.join(DATA_DIR, 'days');
+  if (!fs.existsSync(daysDir)) fs.mkdirSync(daysDir, { recursive: true });
+  fs.writeFileSync(path.join(daysDir, `${date}.json`), JSON.stringify(data, null, 2));
+  res.json({ ok: true });
+});
+
+// Write/update summary (week or month)
+app.put('/api/summary/:type/:period', (req, res) => {
+  const { type, period } = req.params;
+  if (!['week', 'month'].includes(type)) return res.status(400).json({ error: 'type must be week or month' });
+  const data = req.body;
+  const summariesDir = path.join(DATA_DIR, 'summaries');
+  if (!fs.existsSync(summariesDir)) fs.mkdirSync(summariesDir, { recursive: true });
+  fs.writeFileSync(path.join(summariesDir, `${type}-${period}.json`), JSON.stringify(data, null, 2));
+  res.json({ ok: true });
+});
+
 // Main SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
