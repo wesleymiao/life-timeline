@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wesley's Life Timeline</title>
+<style>
+:root{--bg:#f5f5f7;--card:#fff;--text:#1d1d1f;--text2:#6e6e73;--accent:#667eea;--accent2:#764ba2;--border:#e5e5ea}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+.header{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:2rem;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.1)}
+.header h1{font-size:1.8rem;font-weight:700;margin-bottom:.3rem}
+.header p{opacity:.85;font-size:.9rem}
+.nav{display:flex;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+.nav button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:.9rem;transition:all .2s}
+.nav button:hover,.nav button.active{background:rgba(255,255,255,.35)}
+.container{max-width:900px;margin:0 auto;padding:1rem}
+.month-selector{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;flex-wrap:wrap}
+.month-selector select{padding:8px 16px;border:2px solid var(--border);border-radius:8px;font-size:1rem;background:#fff}
+.month-selector button{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer}
+.day-card{background:var(--card);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .2s}
+.day-card:hover{transform:translateY(-2px)}
+.day-date{font-size:1.3rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.day-date .weekday{font-size:.85rem;color:var(--text2);font-weight:400}
+.summary-text{color:var(--text);margin-bottom:1rem;font-size:1rem;line-height:1.8}
+.meta-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.tag{background:linear-gradient(135deg,#667eea20,#764ba220);color:var(--accent2);padding:4px 12px;border-radius:12px;font-size:.8rem}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;margin-top:1rem}
+.photo-item{position:relative;border-radius:12px;overflow:hidden;cursor:pointer;aspect-ratio:1;background:#f0f0f0}
+.photo-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.photo-item:hover img{transform:scale(1.05)}
+.photo-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;padding:2rem .75rem .75rem;font-size:.8rem}
+.photo-time{font-weight:600;margin-bottom:2px}
+.highlights{background:linear-gradient(135deg,#fff3cd,#ffeaa7);padding:1rem;border-radius:12px;margin-bottom:1rem}
+.highlights h4{color:#f39c12;margin-bottom:.5rem;font-size:.9rem}
+.highlights li{margin-left:1.2rem;color:#666;font-size:.9rem}
+.week-summary,.month-summary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:16px;padding:2rem;margin-bottom:1.5rem}
+.week-summary h3,.month-summary h3{margin-bottom:.5rem}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem}
+.lightbox.show{display:flex}
+.lightbox img{max-width:95%;max-height:90vh;border-radius:8px;object-fit:contain}
+.lightbox .close{position:absolute;top:1rem;right:1rem;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none}
+.lightbox .info{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);color:#fff;text-align:center;max-width:600px;padding:1rem;background:rgba(0,0,0,.5);border-radius:12px}
+.loading{text-align:center;padding:3rem;color:var(--text2)}
+.empty{text-align:center;padding:3rem;color:var(--text2)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin:1rem 0}
+.stat{text-align:center;padding:1rem;background:rgba(255,255,255,.15);border-radius:12px}
+.stat .num{font-size:1.8rem;font-weight:700}
+.stat .label{font-size:.8rem;opacity:.8}
+@media(max-width:600px){
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
+  .header h1{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🌟 Wesley's Life Timeline</h1>
+  <p>用照片记录每一天的精彩</p>
+  <div class="nav">
+    <button class="active" onclick="showView('timeline')">📅 时间线</button>
+    <button onclick="showView('weekly')">📊 周视图</button>
+    <button onclick="showView('monthly')">📆 月视图</button>
+  </div>
+</div>
+
+<div class="container" id="content">
+  <div class="loading">加载中...</div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="close" onclick="closeLightbox()">&times;</button>
+  <img id="lb-img" src="">
+  <div class="info" id="lb-info"></div>
+</div>
+
+<script>
+const WEEKDAYS = ['日','一','二','三','四','五','六'];
+let allDays = [];
+let currentView = 'timeline';
+
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) return null;
+  return r.json();
+}
+
+async function init() {
+  allDays = await fetchJSON('/api/days') || [];
+  showView('timeline');
+}
+
+function showView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav button').forEach((b,i) => {
+    b.classList.toggle('active', ['timeline','weekly','monthly'][i] === view);
+  });
+  if (view === 'timeline') renderTimeline();
+  else if (view === 'weekly') renderWeekly();
+  else if (view === 'monthly') renderMonthly();
+}
+
+function renderTimeline() {
+  if (!allDays.length) { document.getElementById('content').innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  let html = '';
+  allDays.forEach(day => {
+    html += renderDayCard(day, false);
+  });
+  document.getElementById('content').innerHTML = html;
+  // Lazy load full data for each day
+  allDays.forEach(day => loadDayPhotos(day.date));
+}
+
+function renderDayCard(day, showPhotos = false) {
+  const d = new Date(day.date + 'T00:00:00');
+  const wd = WEEKDAYS[d.getDay()];
+  const s = day.summary || {};
+  let html = `<div class="day-card" id="day-${day.date}">
+    <div class="day-date">${day.date} <span class="weekday">星期${wd}</span> <span class="weekday">📷 ${day.photo_count}张</span></div>
+    <div class="summary-text">${s.summary || ''}</div>`;
+  if (s.highlights?.length) {
+    html += `<div class="highlights"><h4>✨ 亮点</h4><ul>${s.highlights.map(h=>`<li>${h}</li>`).join('')}</ul></div>`;
+  }
+  if (s.activities?.length || s.locations?.length) {
+    html += '<div class="meta-tags">';
+    (s.activities||[]).forEach(a => html += `<span class="tag">🎯 ${a}</span>`);
+    (s.locations||[]).forEach(l => html += `<span class="tag">📍 ${l}</span>`);
+    html += '</div>';
+  }
+  html += `<div class="photo-grid" id="photos-${day.date}"></div></div>`;
+  return html;
+}
+
+async function loadDayPhotos(date) {
+  const data = await fetchJSON(`/api/day/${date}`);
+  if (!data?.photos) return;
+  const grid = document.getElementById(`photos-${date}`);
+  if (!grid) return;
+  grid.innerHTML = data.photos.map(p => {
+    const thumbSrc = `/photos/${date}/thumbs/${p.filename}`;
+    const fullSrc = `/photos/${date}/${p.filename}`;
+    const desc = p.analysis?.description || '';
+    return `<div class="photo-item" onclick="openLightbox('${fullSrc}','${p.time}','${desc.replace(/'/g,"\\'")}')">
+      <img src="${thumbSrc}" alt="${desc}" loading="lazy" onerror="this.src='${fullSrc}'">
+      <div class="photo-caption"><div class="photo-time">${p.time}</div>${p.analysis?.activity||''}</div>
+    </div>`;
+  }).join('');
+}
+
+async function renderWeekly() {
+  const content = document.getElementById('content');
+  // Group days into weeks
+  if (!allDays.length) { content.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+
+  const weeks = {};
+  allDays.forEach(day => {
+    const d = new Date(day.date + 'T00:00:00');
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay());
+    const key = weekStart.toISOString().split('T')[0];
+    if (!weeks[key]) weeks[key] = [];
+    weeks[key].push(day);
+  });
+
+  let html = '';
+  Object.keys(weeks).sort().reverse().forEach(weekStart => {
+    const days = weeks[weekStart];
+    const totalPhotos = days.reduce((s,d) => s + d.photo_count, 0);
+    const allActivities = [...new Set(days.flatMap(d => d.summary?.activities || []))];
+    const weekEnd = new Date(weekStart + 'T00:00:00');
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    html += `<div class="week-summary">
+      <h3>📊 ${weekStart} ~ ${weekEnd.toISOString().split('T')[0]}</h3>
+      <div class="stats">
+        <div class="stat"><div class="num">${days.length}</div><div class="label">天有记录</div></div>
+        <div class="stat"><div class="num">${totalPhotos}</div><div class="label">张照片</div></div>
+        <div class="stat"><div class="num">${allActivities.length}</div><div class="label">种活动</div></div>
+      </div>
+      <div class="meta-tags" style="margin-top:.5rem">${allActivities.map(a=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">🎯 ${a}</span>`).join('')}</div>
+    </div>`;
+    days.forEach(day => {
+      html += renderDayCard(day);
+    });
+  });
+
+  content.innerHTML = html;
+  allDays.forEach(day => loadDayPhotos(day.date));
+}
+
+async function renderMonthly() {
+  const content = document.getElementById('content');
+  if (!allDays.length) { content.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+
+  const months = {};
+  allDays.forEach(day => {
+    const key = day.date.substring(0, 7);
+    if (!months[key]) months[key] = [];
+    months[key].push(day);
+  });
+
+  let html = '';
+  Object.keys(months).sort().reverse().forEach(month => {
+    const days = months[month];
+    const totalPhotos = days.reduce((s,d) => s + d.photo_count, 0);
+    const allActivities = [...new Set(days.flatMap(d => d.summary?.activities || []))];
+    const allLocations = [...new Set(days.flatMap(d => d.summary?.locations || []))];
+
+    html += `<div class="month-summary">
+      <h3>📆 ${month}</h3>
+      <div class="stats">
+        <div class="stat"><div class="num">${days.length}</div><div class="label">天有记录</div></div>
+        <div class="stat"><div class="num">${totalPhotos}</div><div class="label">张照片</div></div>
+        <div class="stat"><div class="num">${allActivities.length}</div><div class="label">种活动</div></div>
+        <div class="stat"><div class="num">${allLocations.length}</div><div class="label">个地点</div></div>
+      </div>
+      <div class="meta-tags" style="margin-top:.5rem">
+        ${allActivities.map(a=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">🎯 ${a}</span>`).join('')}
+        ${allLocations.slice(0,8).map(l=>`<span class="tag" style="background:rgba(255,255,255,.2);color:#fff">📍 ${l}</span>`).join('')}
+      </div>
+    </div>`;
+    days.forEach(day => {
+      html += renderDayCard(day);
+    });
+  });
+
+  content.innerHTML = html;
+  allDays.forEach(day => loadDayPhotos(day.date));
+}
+
+function openLightbox(src, time, desc) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-info').innerHTML = `<strong>${time}</strong><br>${desc}`;
+  document.getElementById('lightbox').classList.add('show');
+  event.stopPropagation();
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+init();
+</script>
+</body>
+</html>
