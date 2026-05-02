@@ -200,11 +200,15 @@ app.post('/api/comments-mark-processed', (req, res) => {
   const { ids } = req.body; // array of { date, id }
   if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids array required' });
   const comments = loadComments();
-  for (const { date, id } of ids) {
+  for (const item of ids) {
+    const { date, id } = item;
     const clist = comments[date];
     if (clist) {
       const c = clist.find(x => x.id === id);
-      if (c) c.processed = true;
+      if (c) {
+        c.processed = true;
+        if (item.reply) c.reply = item.reply;
+      }
     }
   }
   saveComments(comments);

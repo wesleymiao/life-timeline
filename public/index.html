@@ -46,6 +46,8 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .lb-comments .comment-text{flex:1}
 .lb-comments .comment-delete{background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:.75rem;padding:2px 6px;opacity:.6;white-space:nowrap}
 .lb-comments .comment-delete:hover{opacity:1}
+.lb-comments .comment-reply{color:#8f8;font-size:.75rem;margin-top:2px;font-style:italic}
+.day-comment-reply{color:var(--accent);font-size:.75rem;margin-left:1rem;font-style:italic}
 .comment-form{display:flex;gap:.5rem;margin-top:.5rem}
 .comment-form input{flex:1;padding:8px 12px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font-size:.85rem;outline:none}
 .comment-form input::placeholder{color:rgba(255,255,255,.4)}
@@ -208,8 +210,9 @@ function renderDayComments(date, comments) {
     comments.forEach(c => {
       const photoRef = (c.photoIndex !== null && c.photoIndex !== undefined)
         ? `<span class="photo-ref">[照片${c.photoIndex+1}]</span>` : '';
+      const reply = c.reply ? `<div class="day-comment-reply">↳ ${esc(c.reply)}</div>` : '';
       html += `<div class="day-comment-item">
-        <span>${photoRef}${esc(c.text)}</span>
+        <div><span>${photoRef}${esc(c.text)}</span>${reply}</div>
         <button class="comment-delete" onclick="deleteComment('${date}','${c.id}')">删除</button>
       </div>`;
     });
@@ -275,8 +278,9 @@ async function renderLbComments() {
 
   let html = '';
   photoComments.forEach(c => {
+    const reply = c.reply ? `<div class="comment-reply">↳ ${esc(c.reply)}</div>` : '';
     html += `<div class="comment-item">
-      <span class="comment-text">${esc(c.text)}</span>
+      <div class="comment-text">${esc(c.text)}${reply}</div>
       <button class="comment-delete" onclick="deleteComment('${currentLbDate}','${c.id}')">删除</button>
     </div>`;
   });
