@@ -1,3 +1,7 @@
 node_modules/
 *.heic
 .DS_Store
+
+# Private data - NEVER commit these
+photos/
+data/
