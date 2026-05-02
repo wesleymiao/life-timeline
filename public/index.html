@@ -38,6 +38,8 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .lightbox.show{display:flex}
 .lightbox img{max-width:95%;max-height:60vh;border-radius:8px;object-fit:contain}
 .lightbox .close{position:absolute;top:1rem;right:1rem;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;z-index:1001}
+.lightbox .lb-hide{position:absolute;top:1rem;left:1rem;color:#fff;font-size:.85rem;cursor:pointer;background:rgba(255,100,100,.7);border:none;border-radius:8px;padding:6px 14px;z-index:1001}
+.lightbox .lb-hide:hover{background:rgba(255,80,80,.9)}
 .lightbox .lb-bottom{position:absolute;bottom:0;left:0;right:0;max-height:35vh;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;align-items:center}
 .lightbox .info{color:#fff;text-align:center;max-width:600px;padding:.75rem 1rem;background:rgba(0,0,0,.5);border-radius:12px 12px 0 0;width:100%;max-width:600px}
 .lb-comments{width:100%;max-width:600px;background:rgba(30,30,30,.85);border-radius:0 0 12px 12px;padding:.75rem 1rem}
@@ -97,6 +99,7 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 
 <div class="lightbox" id="lightbox">
   <button class="close" onclick="closeLightbox()">&times;</button>
+  <button class="lb-hide" id="lb-hide-btn" onclick="hidePhoto()">隐藏此照片</button>
   <button class="lb-nav lb-prev" onclick="navLightbox(-1);event.stopPropagation()">&#8249;</button>
   <button class="lb-nav lb-next" onclick="navLightbox(1);event.stopPropagation()">&#8250;</button>
   <img id="lb-img" src="" onclick="event.stopPropagation()">
@@ -177,11 +180,13 @@ async function loadDayPhotos(date) {
   const grid = document.getElementById(`photos-${date}`);
   if (!grid) return;
 
-  // Store photos for lightbox navigation
+  // Store all photos (including hidden) with original indices for lightbox
   if (!window._dayPhotos) window._dayPhotos = {};
   window._dayPhotos[date] = data.photos;
 
-  grid.innerHTML = data.photos.map((p, idx) => {
+  const visible = data.photos.map((p, idx) => ({...p, _idx: idx})).filter(p => !p.hidden);
+  grid.innerHTML = visible.map(p => {
+    const idx = p._idx;
     const thumbSrc = `/photos/${date}/thumbs/${p.filename}`;
     const fullSrc = `/photos/${date}/${p.filename}`;
     const desc = p.analysis?.description || '';
@@ -309,7 +314,10 @@ async function addLbComment() {
 }
 
 function navLightbox(dir) {
-  const newIdx = currentLbIndex + dir;
+  let newIdx = currentLbIndex + dir;
+  while (newIdx >= 0 && newIdx < currentLbPhotos.length && currentLbPhotos[newIdx]?.hidden) {
+    newIdx += dir;
+  }
   if (newIdx >= 0 && newIdx < currentLbPhotos.length) {
     currentLbIndex = newIdx;
     showLbPhoto();
@@ -318,6 +326,19 @@ function navLightbox(dir) {
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('show');
+}
+
+async function hidePhoto() {
+  if (!confirm('确定要隐藏这张照片吗？隐藏后摘要会自动重新生成。')) return;
+  const p = currentLbPhotos[currentLbIndex];
+  await fetch(`/api/day/${currentLbDate}/hide-photo`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ photoIndex: currentLbIndex })
+  });
+  closeLightbox();
+  delete commentsCache[currentLbDate];
+  loadDayPhotos(currentLbDate);
 }
 
 function esc(s) {

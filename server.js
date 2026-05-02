@@ -91,7 +91,7 @@ app.get('/api/days', (req, res) => {
   const files = fs.readdirSync(daysDir).filter(f => f.endsWith('.json')).sort().reverse();
   const days = files.map(f => {
     const data = JSON.parse(fs.readFileSync(path.join(daysDir, f), 'utf-8'));
-    return { date: data.date, photo_count: data.photo_count, summary: data.summary };
+    return { date: data.date, photo_count: (data.photos || []).filter(p => !p.hidden).length, summary: data.summary };
   });
   res.json(days);
 });
@@ -213,6 +213,36 @@ app.post('/api/comments-mark-processed', (req, res) => {
   }
   saveComments(comments);
   res.json({ ok: true, marked: ids.length });
+});
+
+// Hide/unhide a photo (triggers summary regeneration via comment system)
+app.post('/api/day/:date/hide-photo', (req, res) => {
+  const { date } = req.params;
+  const { photoIndex, hidden } = req.body;
+  if (photoIndex === undefined) return res.status(400).json({ error: 'photoIndex required' });
+  const file = path.join(DATA_DIR, 'days', `${date}.json`);
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'day not found' });
+  const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+  if (!data.photos || photoIndex >= data.photos.length) return res.status(400).json({ error: 'invalid photoIndex' });
+  const hide = hidden !== false;
+  data.photos[photoIndex].hidden = hide;
+  data.photo_count = data.photos.filter(p => !p.hidden).length;
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  // Add a system comment to trigger summary regeneration
+  const comments = loadComments();
+  if (!comments[date]) comments[date] = [];
+  const action = hide ? '隐藏' : '恢复';
+  const desc = data.photos[photoIndex].analysis?.description || `照片${photoIndex + 1}`;
+  comments[date].push({
+    id: Date.now().toString(36),
+    photoIndex: null,
+    text: `[系统] 用户${action}了照片${photoIndex + 1}（${desc.slice(0, 30)}）`,
+    created_at: new Date().toISOString(),
+    processed: false,
+    system: true
+  });
+  saveComments(comments);
+  res.json({ ok: true, hidden: hide });
 });
 
 // Write/update day data (used by agent after processing)
