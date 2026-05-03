@@ -294,7 +294,19 @@ function showLbPhoto() {
   const loc = p.metadata?.address || p.analysis?.location || '';
   const locHtml = loc ? `<br>📍 ${loc}` : '';
   const gps = p.metadata?.gps;
-  const gpsLink = gps ? ` <a href="https://uri.amap.com/marker?position=${gps.longitude},${gps.latitude}&name=${encodeURIComponent(loc)}" target="_blank" style="color:#8af;font-size:.75rem">[地图]</a>` : '';
+  let gpsLink = '';
+  if (gps) {
+    // WGS-84 to GCJ-02 conversion for China maps
+    const PI = Math.PI, a = 6378245.0, ee = 0.00669342162296594;
+    function outOfChina(lng,lat){return lng<72.004||lng>137.8347||lat<0.8293||lat>55.8271}
+    function transformLat(x,y){let r=-100+2*x+3*y+.2*y*y+.1*x*y+.2*Math.sqrt(Math.abs(x));r+=2*(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))/3;r+=2*(20*Math.sin(y*PI)+40*Math.sin(y/3*PI))/3;r+=2*(160*Math.sin(y/12*PI)+320*Math.sin(y*PI/30))/3;return r}
+    function transformLng(x,y){let r=300+x+2*y+.1*x*x+.1*x*y+.1*Math.sqrt(Math.abs(x));r+=2*(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))/3;r+=2*(20*Math.sin(x*PI)+40*Math.sin(x/3*PI))/3;r+=2*(150*Math.sin(x/12*PI)+300*Math.sin(x/30*PI))/3;return r}
+    function wgs84ToGcj02(lng,lat){if(outOfChina(lng,lat))return[lng,lat];let dLat=transformLat(lng-105,lat-35),dLng=transformLng(lng-105,lat-35);const radLat=lat/180*PI,magic=1-ee*Math.sin(radLat)*Math.sin(radLat),sqrtMagic=Math.sqrt(magic);dLat=dLat*180/(a*(1-ee)/(magic*sqrtMagic)*PI);dLng=dLng*180/(a/sqrtMagic*Math.cos(radLat)*PI);return[lng+dLng,lat+dLat]}
+    const [gcjLng,gcjLat] = wgs84ToGcj02(gps.longitude, gps.latitude);
+    const locName = encodeURIComponent(loc);
+    gpsLink = ` <a href="https://uri.amap.com/marker?position=${gcjLng},${gcjLat}&name=${locName}" target="_blank" style="color:#8af;font-size:.75rem">[高德]</a>`
+            + ` <a href="https://www.google.com/maps?q=${gps.latitude},${gps.longitude}" target="_blank" style="color:#8af;font-size:.75rem">[谷歌]</a>`;
+  }
   document.getElementById('lb-info').innerHTML =
     `<strong>${p.time}</strong>${locHtml}${gpsLink}<br>${p.analysis?.description||''}`;
   renderLbComments();
