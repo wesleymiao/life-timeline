@@ -12,8 +12,9 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .header h1{font-size:1.8rem;font-weight:700;margin-bottom:.3rem}
 .header p{opacity:.85;font-size:.9rem}
 .nav{display:flex;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
-.nav button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:.9rem;transition:all .2s}
-.nav button:hover,.nav button.active{background:rgba(255,255,255,.35)}
+.nav button{background:rgba(255,255,255,.15);border:none;color:rgba(255,255,255,.7);padding:8px 20px;border-radius:20px;cursor:pointer;font-size:.9rem;transition:all .2s}
+.nav button:hover{background:rgba(255,255,255,.25);color:#fff}
+.nav button.active{background:#fff;color:var(--accent);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .container{flex:1;min-width:0;padding:1rem}
 .day-card{background:var(--card);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .2s}
 .day-card:hover{transform:translateY(-2px)}
@@ -69,7 +70,7 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .loading{text-align:center;padding:3rem;color:var(--text2)}
 .empty{text-align:center;padding:3rem;color:var(--text2)}
 .page-wrap{display:flex;max-width:1100px;margin:0 auto}
-.timeline-nav{position:sticky;top:120px;align-self:flex-start;width:140px;min-width:140px;max-height:calc(100vh - 140px);overflow-y:auto;padding:.5rem 0 .5rem .5rem;scrollbar-width:thin}
+.timeline-nav{position:sticky;top:140px;align-self:flex-start;width:140px;min-width:140px;max-height:calc(100vh - 150px);overflow-y:auto;padding:.75rem 0 .5rem .5rem;scrollbar-width:thin}
 .timeline-nav::-webkit-scrollbar{width:3px}
 .timeline-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .timeline-nav .tl-year{font-size:.75rem;font-weight:700;color:var(--accent);padding:8px 0 4px 8px;position:sticky;top:0;background:var(--bg);z-index:1}
@@ -101,7 +102,7 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
   <h1>Wesley's Life Timeline</h1>
   <p>用照片记录每一天的精彩</p>
   <div class="nav">
-    <button class="active" onclick="showView('timeline')">时间线</button>
+    <button class="active" onclick="showView('timeline')">日视图</button>
     <button onclick="showView('weekly')">周视图</button>
     <button onclick="showView('monthly')">月视图</button>
   </div>
