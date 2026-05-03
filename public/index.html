@@ -294,7 +294,7 @@ function showLbPhoto() {
   const loc = p.metadata?.address || p.analysis?.location || '';
   const locHtml = loc ? `<br>📍 ${loc}` : '';
   const gps = p.metadata?.gps;
-  const gpsLink = gps ? ` <a href="https://www.google.com/maps?q=${gps.latitude},${gps.longitude}" target="_blank" style="color:#8af;font-size:.75rem">[地图]</a>` : '';
+  const gpsLink = gps ? ` <a href="https://uri.amap.com/marker?position=${gps.longitude},${gps.latitude}&name=${encodeURIComponent(loc)}" target="_blank" style="color:#8af;font-size:.75rem">[地图]</a>` : '';
   document.getElementById('lb-info').innerHTML =
     `<strong>${p.time}</strong>${locHtml}${gpsLink}<br>${p.analysis?.description||''}`;
   renderLbComments();
