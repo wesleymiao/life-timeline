@@ -28,6 +28,7 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .photo-item:hover img{transform:scale(1.05)}
 .photo-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;padding:2rem .75rem .75rem;font-size:.8rem}
 .photo-time{font-weight:600;margin-bottom:2px}
+.photo-loc{font-size:.7rem;opacity:.8;margin-top:2px}
 .photo-comment-badge{position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .highlights{background:linear-gradient(135deg,#fff3cd,#ffeaa7);padding:1rem;border-radius:12px;margin-bottom:1rem}
 .highlights h4{color:#f39c12;margin-bottom:.5rem;font-size:.9rem}
@@ -192,10 +193,11 @@ async function loadDayPhotos(date) {
     const desc = p.analysis?.description || '';
     const photoComments = comments.filter(c => c.photoIndex === idx);
     const badge = photoComments.length ? `<div class="photo-comment-badge">${photoComments.length}</div>` : '';
+    const locTag = p.metadata?.address ? `<div class="photo-loc">📍${p.metadata.address}</div>` : '';
     return `<div class="photo-item" onclick="openLightbox('${date}',${idx})">
       <img src="${thumbSrc}" alt="${desc}" loading="lazy" onerror="this.src='${fullSrc}'">
       ${badge}
-      <div class="photo-caption"><div class="photo-time">${p.time}</div>${p.analysis?.activity||''}</div>
+      <div class="photo-caption"><div class="photo-time">${p.time}</div>${p.analysis?.activity||''}${locTag}</div>
     </div>`;
   }).join('');
 
@@ -270,9 +272,12 @@ function showLbPhoto() {
   if (!p) return;
   const fullSrc = `/photos/${currentLbDate}/${p.filename}`;
   document.getElementById('lb-img').src = fullSrc;
-  const loc = p.analysis?.location ? ` | ${p.analysis.location}` : '';
+  const loc = p.metadata?.address || p.analysis?.location || '';
+  const locHtml = loc ? `<br>📍 ${loc}` : '';
+  const gps = p.metadata?.gps;
+  const gpsLink = gps ? ` <a href="https://www.google.com/maps?q=${gps.latitude},${gps.longitude}" target="_blank" style="color:#8af;font-size:.75rem">[地图]</a>` : '';
   document.getElementById('lb-info').innerHTML =
-    `<strong>${p.time}</strong>${loc}<br>${p.analysis?.description||''}`;
+    `<strong>${p.time}</strong>${locHtml}${gpsLink}<br>${p.analysis?.description||''}`;
   renderLbComments();
 }
 
