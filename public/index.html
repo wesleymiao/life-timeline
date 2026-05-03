@@ -70,7 +70,8 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .loading{text-align:center;padding:3rem;color:var(--text2)}
 .empty{text-align:center;padding:3rem;color:var(--text2)}
 .page-wrap{display:flex;max-width:1100px;margin:0 auto}
-.timeline-nav{position:sticky;top:140px;align-self:flex-start;width:140px;min-width:140px;max-height:calc(100vh - 150px);overflow-y:auto;overflow-x:hidden;padding:0 0 .5rem .5rem;scrollbar-width:thin}
+.timeline-nav{position:sticky;top:200px;align-self:flex-start;width:140px;min-width:140px;max-height:calc(100vh - 210px);overflow-y:auto;overflow-x:hidden;padding:0 0 .5rem .5rem;scrollbar-width:thin}
+
 .timeline-nav::-webkit-scrollbar{width:3px}
 .timeline-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .timeline-nav .tl-year{font-size:.75rem;font-weight:700;color:var(--accent);padding:6px 8px 4px;position:sticky;top:-1px;background:var(--bg);z-index:1;margin-top:0}
@@ -500,6 +501,13 @@ function buildTimelineNav(mode) {
     }
   });
   nav.innerHTML = html;
+  // Dynamically set sticky top to match header height
+  const hdr = document.querySelector('.header');
+  if (hdr) {
+    const hh = hdr.offsetHeight + 8;
+    nav.style.top = hh + 'px';
+    nav.style.maxHeight = 'calc(100vh - ' + (hh + 10) + 'px)';
+  }
   setupNavHighlight();
 }
 
