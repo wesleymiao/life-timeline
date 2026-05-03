@@ -305,7 +305,7 @@ function showLbPhoto() {
     const [gcjLng,gcjLat] = wgs84ToGcj02(gps.longitude, gps.latitude);
     const locName = encodeURIComponent(loc);
     gpsLink = ` <a href="https://uri.amap.com/marker?position=${gcjLng},${gcjLat}&name=${locName}" target="_blank" style="color:#8af;font-size:.75rem">[高德]</a>`
-            + ` <a href="https://www.google.com/maps?q=${gps.latitude},${gps.longitude}" target="_blank" style="color:#8af;font-size:.75rem">[谷歌]</a>`;
+            + ` <a href="https://www.google.com/maps?q=${gcjLat},${gcjLng}" target="_blank" style="color:#8af;font-size:.75rem">[谷歌]</a>`;
   }
   document.getElementById('lb-info').innerHTML =
     `<strong>${p.time}</strong>${locHtml}${gpsLink}<br>${p.analysis?.description||''}`;
