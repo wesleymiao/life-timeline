@@ -10,11 +10,11 @@
 body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(124,91,245,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(192,132,252,.1) 0%,transparent 50%);pointer-events:none;z-index:0}
 
-.header{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(15,15,26,.7);border-bottom:1px solid var(--glass-border);color:#fff;padding:1.5rem 2rem;text-align:center;position:sticky;top:0;z-index:100}
-.header h1{font-size:1.8rem;font-weight:700;margin-bottom:.3rem;background:linear-gradient(135deg,#e8e8f0,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.header p{opacity:.5;font-size:.85rem}
-.nav{display:flex;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
-.nav button{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:8px 20px;border-radius:20px;cursor:pointer;font-size:.9rem;transition:all .3s}
+.header{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(15,15,26,.7);border-bottom:1px solid var(--glass-border);color:#fff;padding:.6rem 1.5rem;position:sticky;top:0;z-index:100}
+.header-row{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap}
+.header h1{font-size:1.2rem;font-weight:700;background:linear-gradient(135deg,#e8e8f0,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+.nav{display:flex;gap:.4rem;flex-wrap:wrap}
+.nav button{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:5px 16px;border-radius:20px;cursor:pointer;font-size:.82rem;transition:all .3s}
 .nav button:hover{background:rgba(255,255,255,.12);color:var(--text);border-color:rgba(255,255,255,.2)}
 .nav button.active{background:rgba(124,91,245,.2);color:var(--accent2);font-weight:600;border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
 
@@ -79,7 +79,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .loading{text-align:center;padding:3rem;color:var(--text2)}
 .empty{text-align:center;padding:3rem;color:var(--text2)}
 .page-wrap{display:flex;max-width:1100px;margin:0 auto;position:relative;z-index:1}
-.timeline-nav{position:sticky;top:200px;align-self:flex-start;width:140px;min-width:140px;max-height:calc(100vh - 210px);overflow-y:auto;overflow-x:hidden;padding:0 0 .5rem .5rem;scrollbar-width:thin}
+.timeline-nav{position:sticky;top:100px;align-self:flex-start;width:140px;min-width:140px;max-height:calc(100vh - 110px);overflow-y:auto;overflow-x:hidden;padding:0 0 .5rem .5rem;scrollbar-width:thin}
 .timeline-nav::-webkit-scrollbar{width:3px}
 .timeline-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .timeline-nav .tl-year{font-size:.75rem;font-weight:700;color:var(--accent2);padding:6px 8px 4px;position:sticky;top:-1px;background:var(--bg);z-index:1;margin-top:0}
@@ -110,7 +110,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   .header h1{font-size:1.4rem}
   .lb-nav{padding:8px 12px;font-size:1.5rem}
 }
-.city-filter{display:flex;gap:.4rem;margin-top:.8rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;justify-content:center;flex-wrap:wrap}
+.city-filter{display:flex;gap:.3rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;flex-wrap:wrap;justify-content:center;margin-top:.4rem}
 .city-filter::-webkit-scrollbar{display:none}
 .city-btn{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:5px 14px;border-radius:16px;cursor:pointer;font-size:.8rem;white-space:nowrap;transition:all .3s}
 .city-btn:hover{background:rgba(255,255,255,.12);color:var(--text);border-color:rgba(255,255,255,.2)}
@@ -121,12 +121,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </head>
 <body>
 <div class="header">
-  <h1>Wesley's Life Timeline</h1>
-  <p>用照片记录每一天的精彩</p>
-  <div class="nav">
-    <button class="active" onclick="showView('timeline')">日视图</button>
-    <button onclick="showView('weekly')">周视图</button>
-    <button onclick="showView('monthly')">月视图</button>
+  <div class="header-row">
+    <h1>Wesley's Life Timeline</h1>
+    <div class="nav">
+      <button class="active" onclick="showView('timeline')">日视图</button>
+      <button onclick="showView('weekly')">周视图</button>
+      <button onclick="showView('monthly')">月视图</button>
+    </div>
   </div>
   <div class="city-filter" id="city-filter"></div>
 </div>
