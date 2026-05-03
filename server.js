@@ -84,14 +84,51 @@ const PHOTOS_DIR = path.join(DATA_BASE, 'photos');
 app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/photos', express.static(PHOTOS_DIR));
 
+// City extraction from photo addresses
+const CITY_MAP = {
+  '浦东新区': '上海', '上海市': '上海', '黄浦区': '上海', '徐汇区': '上海', '静安区': '上海',
+  '长宁区': '上海', '普陀区': '上海', '虹口区': '上海', '杨浦区': '上海', '闵行区': '上海',
+  '宝山区': '上海', '嘉定区': '上海', '松江区': '上海', '青浦区': '上海', '奉贤区': '上海', '金山区': '上海', '崇明区': '上海',
+  '吴中区': '苏州', '相城区': '苏州', '苏州工业园区': '苏州', '姑苏区': '苏州', '虎丘区': '苏州', '吴江区': '苏州', '昆山': '苏州',
+  '香港': '香港',
+  '朝阳区': '北京', '海淀区': '北京', '东城区': '北京', '西城区': '北京', '丰台区': '北京', '北京市': '北京',
+};
+
+function extractCity(address) {
+  if (!address) return null;
+  const first = address.split(',')[0].trim();
+  return CITY_MAP[first] || first;
+}
+
+function extractDayCities(data) {
+  const cities = new Set();
+  (data.photos || []).filter(p => !p.hidden).forEach(p => {
+    const city = extractCity(p.metadata?.address);
+    if (city) cities.add(city);
+  });
+  return [...cities];
+}
+
 // API endpoints
+app.get('/api/cities', (req, res) => {
+  const daysDir = path.join(DATA_DIR, 'days');
+  if (!fs.existsSync(daysDir)) return res.json([]);
+  const cityCount = {};
+  fs.readdirSync(daysDir).filter(f => f.endsWith('.json')).forEach(f => {
+    const data = JSON.parse(fs.readFileSync(path.join(daysDir, f), 'utf-8'));
+    extractDayCities(data).forEach(c => { cityCount[c] = (cityCount[c] || 0) + 1; });
+  });
+  const cities = Object.entries(cityCount).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+  res.json(cities);
+});
+
 app.get('/api/days', (req, res) => {
   const daysDir = path.join(DATA_DIR, 'days');
   if (!fs.existsSync(daysDir)) return res.json([]);
   const files = fs.readdirSync(daysDir).filter(f => f.endsWith('.json')).sort().reverse();
   const days = files.map(f => {
     const data = JSON.parse(fs.readFileSync(path.join(daysDir, f), 'utf-8'));
-    return { date: data.date, photo_count: (data.photos || []).filter(p => !p.hidden).length, summary: data.summary };
+    return { date: data.date, photo_count: (data.photos || []).filter(p => !p.hidden).length, summary: data.summary, cities: extractDayCities(data) };
   });
   res.json(days);
 });

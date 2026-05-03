@@ -96,6 +96,11 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
   .header h1{font-size:1.4rem}
   .lb-nav{padding:8px 12px;font-size:1.5rem}
 }
+.city-filter{display:flex;gap:.4rem;margin-top:.8rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;justify-content:center;flex-wrap:wrap}
+.city-filter::-webkit-scrollbar{display:none}
+.city-btn{background:rgba(255,255,255,.15);border:none;color:rgba(255,255,255,.7);padding:5px 14px;border-radius:16px;cursor:pointer;font-size:.8rem;white-space:nowrap;transition:all .2s}
+.city-btn:hover{background:rgba(255,255,255,.25);color:#fff}
+.city-btn.active{background:#fff;color:var(--accent);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 </style>
 </head>
 <body>
@@ -107,6 +112,7 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
     <button onclick="showView('weekly')">周视图</button>
     <button onclick="showView('monthly')">月视图</button>
   </div>
+  <div class="city-filter" id="city-filter"></div>
 </div>
 
 <div class="page-wrap">
@@ -131,6 +137,7 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 <script>
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
 let allDays = [];
+let selectedCity = null;
 let currentView = 'timeline';
 let commentsCache = {};
 let currentLbDate = null, currentLbIndex = null, currentLbPhotos = [];
@@ -149,7 +156,29 @@ async function loadComments(date) {
 
 async function init() {
   allDays = await fetchJSON('/api/days') || [];
+  await loadCityFilter();
   showView('timeline');
+}
+
+async function loadCityFilter() {
+  const cities = await fetchJSON('/api/cities') || [];
+  const el = document.getElementById('city-filter');
+  if (!cities.length) { el.style.display = 'none'; return; }
+  let html = `<button class="city-btn active" onclick="filterCity(null,this)">全部</button>`;
+  cities.forEach(c => { html += `<button class="city-btn" onclick="filterCity('${c.name}',this)">${c.name} (${c.count})</button>`; });
+  el.innerHTML = html;
+}
+
+function filterCity(city, btn) {
+  selectedCity = city;
+  document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showView(currentView);
+}
+
+function getFilteredDays() {
+  if (!selectedCity) return allDays;
+  return allDays.filter(d => d.cities && d.cities.includes(selectedCity));
 }
 
 function showView(view) {
@@ -163,9 +192,10 @@ function showView(view) {
 }
 
 function renderTimeline() {
-  if (!allDays.length) { document.getElementById('content').innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  const days = getFilteredDays();
+  if (!days.length) { document.getElementById('content').innerHTML = '<div class="empty">暂无数据</div>'; return; }
   let html = '';
-  allDays.forEach(day => html += renderDayCard(day));
+  days.forEach(day => html += renderDayCard(day));
   document.getElementById('content').innerHTML = html;
   allDays.forEach(day => loadDayPhotos(day.date));
   buildTimelineNav('day');
@@ -387,7 +417,7 @@ async function renderWeekly() {
   const content = document.getElementById('content');
   if (!allDays.length) { content.innerHTML = '<div class="empty">暂无数据</div>'; return; }
   const weeks = {};
-  allDays.forEach(day => {
+  getFilteredDays().forEach(day => {
     const d = new Date(day.date + 'T00:00:00');
     const weekStart = new Date(d);
     weekStart.setDate(d.getDate() - d.getDay());
@@ -422,7 +452,7 @@ async function renderMonthly() {
   const content = document.getElementById('content');
   if (!allDays.length) { content.innerHTML = '<div class="empty">暂无数据</div>'; return; }
   const months = {};
-  allDays.forEach(day => {
+  getFilteredDays().forEach(day => {
     const key = day.date.substring(0, 7);
     if (!months[key]) months[key] = [];
     months[key].push(day);
