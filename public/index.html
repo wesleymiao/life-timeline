@@ -14,7 +14,7 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .nav{display:flex;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
 .nav button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:.9rem;transition:all .2s}
 .nav button:hover,.nav button.active{background:rgba(255,255,255,.35)}
-.container{max-width:900px;margin:0 auto;padding:1rem}
+.container{flex:1;min-width:0;padding:1rem}
 .day-card{background:var(--card);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .2s}
 .day-card:hover{transform:translateY(-2px)}
 .day-date{font-size:1.3rem;font-weight:700;color:var(--accent);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
@@ -68,6 +68,19 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 .day-comment-form button{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.85rem}
 .loading{text-align:center;padding:3rem;color:var(--text2)}
 .empty{text-align:center;padding:3rem;color:var(--text2)}
+.page-wrap{display:flex;max-width:1100px;margin:0 auto}
+.timeline-nav{position:sticky;top:120px;align-self:flex-start;width:140px;min-width:140px;max-height:calc(100vh - 140px);overflow-y:auto;padding:.5rem 0 .5rem .5rem;scrollbar-width:thin}
+.timeline-nav::-webkit-scrollbar{width:3px}
+.timeline-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.timeline-nav .tl-year{font-size:.75rem;font-weight:700;color:var(--accent);padding:8px 0 4px 8px;position:sticky;top:0;background:var(--bg);z-index:1}
+.timeline-nav .tl-item{display:block;padding:4px 10px;font-size:.75rem;color:var(--text2);cursor:pointer;border-left:2px solid var(--border);text-decoration:none;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timeline-nav .tl-item:hover{color:var(--accent);border-left-color:var(--accent);background:rgba(102,126,234,.06)}
+.timeline-nav .tl-item.active{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.container{flex:1;min-width:0;padding:1rem}
+@media(max-width:768px){
+  .timeline-nav{display:none}
+  .page-wrap{display:block}
+}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin:1rem 0}
 .stat{text-align:center;padding:1rem;background:rgba(255,255,255,.15);border-radius:12px}
 .stat .num{font-size:1.8rem;font-weight:700}
@@ -94,8 +107,11 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
   </div>
 </div>
 
+<div class="page-wrap">
+<div class="timeline-nav" id="timeline-nav"></div>
 <div class="container" id="content">
   <div class="loading">加载中...</div>
+</div>
 </div>
 
 <div class="lightbox" id="lightbox">
@@ -150,6 +166,7 @@ function renderTimeline() {
   allDays.forEach(day => html += renderDayCard(day));
   document.getElementById('content').innerHTML = html;
   allDays.forEach(day => loadDayPhotos(day.date));
+  buildTimelineNav('day');
 }
 
 function renderDayCard(day) {
@@ -384,6 +401,7 @@ async function renderWeekly() {
   });
   content.innerHTML = html;
   allDays.forEach(day => loadDayPhotos(day.date));
+  buildTimelineNav('week');
 }
 
 async function renderMonthly() {
@@ -418,6 +436,92 @@ async function renderMonthly() {
   });
   content.innerHTML = html;
   allDays.forEach(day => loadDayPhotos(day.date));
+  buildTimelineNav('month');
+}
+
+function buildTimelineNav(mode) {
+  const nav = document.getElementById('timeline-nav');
+  if (!nav || !allDays.length) { if(nav) nav.innerHTML=''; return; }
+  let items = [];
+  if (mode === 'day') {
+    const byMonth = {};
+    allDays.forEach(d => {
+      const ym = d.date.substring(0, 7);
+      if (!byMonth[ym]) byMonth[ym] = [];
+      byMonth[ym].push(d);
+    });
+    Object.keys(byMonth).sort().reverse().forEach(ym => {
+      items.push({type:'year', label: ym});
+      byMonth[ym].forEach(d => {
+        const dd = new Date(d.date + 'T00:00:00');
+        const wd = WEEKDAYS[dd.getDay()];
+        items.push({type:'item', label: `${d.date.substring(5)} 周${wd}`, targetId: `day-${d.date}`});
+      });
+    });
+  } else if (mode === 'week') {
+    const seenYears = {};
+    const weeks = {};
+    allDays.forEach(d => {
+      const dt = new Date(d.date + 'T00:00:00');
+      const ws = new Date(dt); ws.setDate(dt.getDate() - dt.getDay() + 1);
+      const key = ws.toISOString().split('T')[0];
+      if (!weeks[key]) weeks[key] = [];
+      weeks[key].push(d);
+    });
+    Object.keys(weeks).sort().reverse().forEach(ws => {
+      const yr = ws.substring(0, 4);
+      if (!seenYears[yr]) { seenYears[yr] = true; items.push({type:'year', label: yr}); }
+      const we = new Date(ws + 'T00:00:00'); we.setDate(we.getDate() + 6);
+      items.push({type:'item', label: `${ws.substring(5)} ~ ${we.toISOString().split('T')[0].substring(5)}`, targetId: `day-${weeks[ws][0].date}`});
+    });
+  } else if (mode === 'month') {
+    const seenYears = {};
+    const months = {};
+    allDays.forEach(d => {
+      const ym = d.date.substring(0, 7);
+      if (!months[ym]) months[ym] = [];
+      months[ym].push(d);
+    });
+    const mNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    Object.keys(months).sort().reverse().forEach(ym => {
+      const yr = ym.substring(0, 4);
+      if (!seenYears[yr]) { seenYears[yr] = true; items.push({type:'year', label: yr}); }
+      items.push({type:'item', label: mNames[parseInt(ym.substring(5))-1], targetId: `day-${months[ym][0].date}`});
+    });
+  }
+
+  let html = '';
+  items.forEach(it => {
+    if (it.type === 'year') {
+      html += `<div class="tl-year">${it.label}</div>`;
+    } else {
+      html += `<div class="tl-item" data-target="${it.targetId}" onclick="document.getElementById('${it.targetId}')?.scrollIntoView({behavior:'smooth',block:'start'})">${it.label}</div>`;
+    }
+  });
+  nav.innerHTML = html;
+  setupNavHighlight();
+}
+
+function setupNavHighlight() {
+  const navItems = document.querySelectorAll('.timeline-nav .tl-item');
+  if (!navItems.length) return;
+  const cards = document.querySelectorAll('.day-card');
+  if (!cards.length) return;
+
+  if (window._navObserver) window._navObserver.disconnect();
+  window._navObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navItems.forEach(ni => ni.classList.toggle('active', ni.dataset.target === id));
+        // Scroll active nav item into view
+        const active = document.querySelector('.timeline-nav .tl-item.active');
+        if (active) active.scrollIntoView({block:'nearest', behavior:'smooth'});
+      }
+    });
+  }, {rootMargin: '-120px 0px -60% 0px'});
+
+  cards.forEach(c => window._navObserver.observe(c));
 }
 
 document.addEventListener('keydown', e => {
