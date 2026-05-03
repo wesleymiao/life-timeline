@@ -11,15 +11,20 @@ body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;backgro
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(124,91,245,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(192,132,252,.1) 0%,transparent 50%);pointer-events:none;z-index:0}
 
 .header{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(15,15,26,.7);border-bottom:1px solid var(--glass-border);color:#fff;padding:.6rem 1.5rem;position:sticky;top:0;z-index:100}
-.header-row{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap}
-.header h1{font-size:1.2rem;font-weight:700;background:linear-gradient(135deg,#e8e8f0,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.header h1{font-size:1.2rem;font-weight:700;background:linear-gradient(135deg,#e8e8f0,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;animation:fadeSlideIn .8s ease}
 .nav{display:flex;gap:.4rem;flex-wrap:wrap}
-.nav button{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:5px 16px;border-radius:20px;cursor:pointer;font-size:.82rem;transition:all .3s}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 20px var(--accent-glow)}50%{box-shadow:0 0 30px rgba(124,91,245,.5)}}
+.nav button{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:5px 16px;border-radius:20px;cursor:pointer;font-size:.82rem;transition:all .3s;animation:fadeIn .6s ease backwards}
+.nav button:nth-child(1){animation-delay:.1s}.nav button:nth-child(2){animation-delay:.2s}.nav button:nth-child(3){animation-delay:.3s}
 .nav button:hover{background:rgba(255,255,255,.12);color:var(--text);border-color:rgba(255,255,255,.2)}
-.nav button.active{background:rgba(124,91,245,.2);color:var(--accent2);font-weight:600;border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
+.nav button.active{background:rgba(124,91,245,.2);color:var(--accent2);font-weight:600;border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow);animation:pulse 3s ease-in-out infinite}
 
 .container{flex:1;min-width:0;padding:1rem;position:relative;z-index:1}
-.day-card{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;transition:all .3s}
+.day-card{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;transition:all .3s;animation:slideUp .5s ease backwards}
 .day-card:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18);box-shadow:0 8px 32px rgba(0,0,0,.3)}
 .day-date{font-size:1.3rem;font-weight:700;color:var(--accent2);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
 .day-date .weekday{font-size:.85rem;color:var(--text2);font-weight:400}
@@ -30,6 +35,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .photo-item{position:relative;border-radius:12px;overflow:hidden;cursor:pointer;aspect-ratio:1;background:rgba(255,255,255,.03);border:1px solid var(--border)}
 .photo-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s,filter .3s}
 .photo-item:hover img{transform:scale(1.05);filter:brightness(1.1)}
+.photo-item:hover{box-shadow:0 0 20px var(--accent-glow);border-color:rgba(124,91,245,.3)}
 .photo-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));color:#fff;padding:2rem .75rem .75rem;font-size:.8rem}
 .photo-time{font-weight:600;margin-bottom:2px}
 .photo-loc{font-size:.7rem;opacity:.8;margin-top:2px}
@@ -110,7 +116,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   .header h1{font-size:1.4rem}
   .lb-nav{padding:8px 12px;font-size:1.5rem}
 }
-.city-filter{display:flex;gap:.3rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;flex-wrap:wrap;justify-content:center;margin-top:.4rem}
+.city-filter{display:flex;gap:.3rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;flex-wrap:wrap;margin-top:.4rem;animation:fadeIn .8s ease}
 .city-filter::-webkit-scrollbar{display:none}
 .city-btn{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:5px 14px;border-radius:16px;cursor:pointer;font-size:.8rem;white-space:nowrap;transition:all .3s}
 .city-btn:hover{background:rgba(255,255,255,.12);color:var(--text);border-color:rgba(255,255,255,.2)}
