@@ -116,7 +116,10 @@ app.get('/api/cities', (req, res) => {
   const cityCount = {};
   fs.readdirSync(daysDir).filter(f => f.endsWith('.json')).forEach(f => {
     const data = JSON.parse(fs.readFileSync(path.join(daysDir, f), 'utf-8'));
-    extractDayCities(data).forEach(c => { cityCount[c] = (cityCount[c] || 0) + 1; });
+    (data.photos || []).filter(p => !p.hidden).forEach(p => {
+      const city = extractCity(p.metadata?.address);
+      if (city) cityCount[city] = (cityCount[city] || 0) + 1;
+    });
   });
   const cities = Object.entries(cityCount).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
   res.json(cities);
