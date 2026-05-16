@@ -228,14 +228,69 @@ function showView(view) {
   else if (view === 'monthly') renderMonthly();
 }
 
+const PAGE_SIZE = 10;
+let renderedCount = 0;
+let currentFilteredDays = [];
+let loadingMore = false;
+
 function renderTimeline() {
-  const days = getFilteredDays();
-  if (!days.length) { document.getElementById('content').innerHTML = '<div class="empty">暂无数据</div>'; return; }
-  let html = '';
-  days.forEach(day => html += renderDayCard(day));
-  document.getElementById('content').innerHTML = html;
-  allDays.forEach(day => loadDayPhotos(day.date));
+  currentFilteredDays = getFilteredDays();
+  renderedCount = 0;
+  if (!currentFilteredDays.length) { document.getElementById('content').innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  document.getElementById('content').innerHTML = '';
+  loadMoreDays();
   buildTimelineNav('day');
+  setupInfiniteScroll();
+}
+
+function loadMoreDays() {
+  if (loadingMore || renderedCount >= currentFilteredDays.length) return;
+  loadingMore = true;
+  const content = document.getElementById('content');
+  const batch = currentFilteredDays.slice(renderedCount, renderedCount + PAGE_SIZE);
+  batch.forEach(day => {
+    content.insertAdjacentHTML('beforeend', renderDayCard(day));
+  });
+  renderedCount += batch.length;
+  observePhotoGrids();
+  loadingMore = false;
+}
+
+function setupInfiniteScroll() {
+  if (window._scrollSentinel) window._scrollSentinel.remove();
+  const sentinel = document.createElement('div');
+  sentinel.id = 'scroll-sentinel';
+  sentinel.style.height = '1px';
+  document.getElementById('content').after(sentinel);
+  window._scrollSentinel = sentinel;
+
+  if (window._infiniteObserver) window._infiniteObserver.disconnect();
+  window._infiniteObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && renderedCount < currentFilteredDays.length) {
+      loadMoreDays();
+    }
+  }, { rootMargin: '600px' });
+  window._infiniteObserver.observe(sentinel);
+}
+
+function observePhotoGrids() {
+  if (!window._photoObserver) {
+    window._photoObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const date = e.target.id.replace('photos-', '');
+          if (!e.target.dataset.loaded) {
+            e.target.dataset.loaded = '1';
+            loadDayPhotos(date);
+          }
+          window._photoObserver.unobserve(e.target);
+        }
+      });
+    }, { rootMargin: '400px' });
+  }
+  document.querySelectorAll('.photo-grid:not([data-loaded])').forEach(el => {
+    window._photoObserver.observe(el);
+  });
 }
 
 function renderDayCard(day) {
@@ -475,7 +530,7 @@ async function renderWeekly() {
     days.forEach(day => html += renderDayCard(day));
   });
   content.innerHTML = html;
-  allDays.forEach(day => loadDayPhotos(day.date));
+  observePhotoGrids();
   buildTimelineNav('week');
 }
 
@@ -510,7 +565,7 @@ async function renderMonthly() {
     days.forEach(day => html += renderDayCard(day));
   });
   content.innerHTML = html;
-  allDays.forEach(day => loadDayPhotos(day.date));
+  observePhotoGrids();
   buildTimelineNav('month');
 }
 
