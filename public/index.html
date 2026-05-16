@@ -243,6 +243,20 @@ function renderTimeline() {
   setupInfiniteScroll();
 }
 
+function scrollToTarget(targetId) {
+  if (window.innerWidth <= 768) toggleTimelineNav();
+  let el = document.getElementById(targetId);
+  if (el) { el.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  // Target not rendered yet — render until it exists (timeline view only)
+  if (currentView === 'timeline') {
+    while (!el && renderedCount < currentFilteredDays.length) {
+      loadMoreDays();
+      el = document.getElementById(targetId);
+    }
+    if (el) setTimeout(() => el.scrollIntoView({behavior:'smooth',block:'start'}), 50);
+  }
+}
+
 function loadMoreDays() {
   if (loadingMore || renderedCount >= currentFilteredDays.length) return;
   loadingMore = true;
@@ -625,7 +639,7 @@ function buildTimelineNav(mode) {
     if (it.type === 'year') {
       html += `<div class="tl-year">${it.label}</div>`;
     } else {
-      html += `<div class="tl-item" data-target="${it.targetId}" onclick="document.getElementById('${it.targetId}')?.scrollIntoView({behavior:'smooth',block:'start'});if(window.innerWidth<=768)toggleTimelineNav()">${it.label}</div>`;
+      html += `<div class="tl-item" data-target="${it.targetId}" onclick="scrollToTarget('${it.targetId}')">${it.label}</div>`;
     }
   });
   nav.innerHTML = html;
