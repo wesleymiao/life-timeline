@@ -243,18 +243,26 @@ function renderTimeline() {
   setupInfiniteScroll();
 }
 
+let _navClickLock = false;
 function scrollToTarget(targetId) {
   if (window.innerWidth <= 768) toggleTimelineNav();
   let el = document.getElementById(targetId);
-  if (el) { el.scrollIntoView({behavior:'smooth',block:'start'}); return; }
-  // Target not rendered yet — render until it exists (timeline view only)
-  if (currentView === 'timeline') {
+  if (!el && currentView === 'timeline') {
     while (!el && renderedCount < currentFilteredDays.length) {
       loadMoreDays();
       el = document.getElementById(targetId);
     }
-    if (el) setTimeout(() => el.scrollIntoView({behavior:'smooth',block:'start'}), 50);
   }
+  if (!el) return;
+  // Manually highlight the clicked nav item and lock observer
+  _navClickLock = true;
+  document.querySelectorAll('.timeline-nav .tl-item').forEach(ni => ni.classList.toggle('active', ni.dataset.target === targetId));
+  const activeNav = document.querySelector('.timeline-nav .tl-item.active');
+  if (activeNav) activeNav.scrollIntoView({block:'nearest', behavior:'smooth'});
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+  // Unlock observer after scroll finishes
+  clearTimeout(window._navLockTimer);
+  window._navLockTimer = setTimeout(() => { _navClickLock = false; }, 1500);
 }
 
 function loadMoreDays() {
@@ -660,6 +668,7 @@ function setupNavHighlight() {
 
   if (window._navObserver) window._navObserver.disconnect();
   window._navObserver = new IntersectionObserver(entries => {
+    if (_navClickLock) return;
     entries.forEach(e => {
       if (e.isIntersecting) {
         const id = e.target.id;
