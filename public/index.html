@@ -446,8 +446,12 @@ function openLightbox(date, idx) {
 function showLbPhoto() {
   const p = currentLbPhotos[currentLbIndex];
   if (!p) return;
-  const imgSrc = `/photos/${currentLbDate}/thumbs/${p.filename}`;
-  document.getElementById('lb-img').src = imgSrc;
+  const medName = p.filename.replace(/\.[^.]+$/, '.jpg');
+  const medSrc = `/photos/${currentLbDate}/medium/${medName}`;
+  const thumbSrc = `/photos/${currentLbDate}/thumbs/${p.filename}`;
+  const img = document.getElementById('lb-img');
+  img.src = medSrc;
+  img.onerror = function() { this.onerror = null; this.src = thumbSrc; };
   const loc = p.metadata?.address || p.analysis?.location || '';
   const locHtml = loc ? `<br>📍 ${loc}` : '';
   const gps = p.metadata?.gps;
