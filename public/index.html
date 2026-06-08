@@ -194,8 +194,14 @@ async function loadCityFilter() {
   const cities = await fetchJSON('/api/cities') || [];
   const el = document.getElementById('city-filter');
   if (!cities.length) { el.style.display = 'none'; return; }
+  // Show top 8 cities only, rest behind "more" toggle
+  const topCities = cities.slice(0, 8);
   let html = `<button class="city-btn active" onclick="filterCity(null,this)">全部</button>`;
-  cities.forEach(c => { html += `<button class="city-btn" onclick="filterCity('${c.name}',this)">${c.name} (${c.count})</button>`; });
+  topCities.forEach(c => { html += `<button class="city-btn" onclick="filterCity('${c.name}',this)">${c.name} (${c.count})</button>`; });
+  if (cities.length > 8) {
+    html += `<button class="city-btn" onclick="expandCities(this)" id="city-more">更多 (${cities.length - 8})</button>`;
+    window._allCities = cities;
+  }
   el.innerHTML = html;
 }
 
@@ -215,6 +221,14 @@ function filterCity(city, btn) {
   document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   showView(currentView);
+}
+
+function expandCities(btn) {
+  if (!window._allCities) return;
+  const el = document.getElementById('city-filter');
+  let html = `<button class="city-btn active" onclick="filterCity(null,this)">全部</button>`;
+  window._allCities.forEach(c => { html += `<button class="city-btn" onclick="filterCity('${c.name}',this)">${c.name} (${c.count})</button>`; });
+  el.innerHTML = html;
 }
 
 function getFilteredDays() {
