@@ -355,13 +355,12 @@ async function loadDayPhotos(date) {
   grid.innerHTML = visible.map(p => {
     const idx = p._idx;
     const thumbSrc = `/photos/${date}/thumbs/${p.filename}`;
-    const fullSrc = `/photos/${date}/${p.filename}`;
     const desc = p.analysis?.description || '';
     const photoComments = comments.filter(c => c.photoIndex === idx);
     const badge = photoComments.length ? `<div class="photo-comment-badge">${photoComments.length}</div>` : '';
     const locTag = p.metadata?.address ? `<div class="photo-loc">📍${p.metadata.address}</div>` : '';
     return `<div class="photo-item" onclick="openLightbox('${date}',${idx})">
-      <img src="${thumbSrc}" alt="${desc}" loading="lazy" onerror="this.src='${fullSrc}'">
+      <img src="${thumbSrc}" alt="${desc}" loading="lazy">
       ${badge}
       <div class="photo-caption"><div class="photo-time">${p.time}</div>${p.analysis?.activity||''}${locTag}</div>
     </div>`;
@@ -433,8 +432,8 @@ function openLightbox(date, idx) {
 function showLbPhoto() {
   const p = currentLbPhotos[currentLbIndex];
   if (!p) return;
-  const fullSrc = `/photos/${currentLbDate}/${p.filename}`;
-  document.getElementById('lb-img').src = fullSrc;
+  const imgSrc = `/photos/${currentLbDate}/thumbs/${p.filename}`;
+  document.getElementById('lb-img').src = imgSrc;
   const loc = p.metadata?.address || p.analysis?.location || '';
   const locHtml = loc ? `<br>📍 ${loc}` : '';
   const gps = p.metadata?.gps;

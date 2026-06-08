@@ -110,7 +110,12 @@ function extractDayCities(data) {
 }
 
 // API endpoints
+let _citiesCache = null;
+let _citiesCacheTime = 0;
+
 app.get('/api/cities', (req, res) => {
+  const now = Date.now();
+  if (_citiesCache && now - _citiesCacheTime < DAYS_CACHE_TTL) return res.json(_citiesCache);
   const daysDir = path.join(DATA_DIR, 'days');
   if (!fs.existsSync(daysDir)) return res.json([]);
   const cityCount = {};
@@ -122,17 +127,41 @@ app.get('/api/cities', (req, res) => {
     });
   });
   const cities = Object.entries(cityCount).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+  _citiesCache = cities;
+  _citiesCacheTime = now;
   res.json(cities);
 });
 
-app.get('/api/days', (req, res) => {
+// Cache for /api/days — regenerated when day files change
+let _daysCache = null;
+let _daysCacheTime = 0;
+const DAYS_CACHE_TTL = 60000; // 1 minute
+
+function getDaysData() {
+  const now = Date.now();
+  if (_daysCache && now - _daysCacheTime < DAYS_CACHE_TTL) return _daysCache;
   const daysDir = path.join(DATA_DIR, 'days');
-  if (!fs.existsSync(daysDir)) return res.json([]);
+  if (!fs.existsSync(daysDir)) return [];
   const files = fs.readdirSync(daysDir).filter(f => f.endsWith('.json')).sort().reverse();
   const days = files.map(f => {
     const data = JSON.parse(fs.readFileSync(path.join(daysDir, f), 'utf-8'));
     return { date: data.date, photo_count: (data.photos || []).filter(p => !p.hidden).length, summary: data.summary, cities: extractDayCities(data) };
   });
+  _daysCache = days;
+  _daysCacheTime = now;
+  return days;
+}
+
+app.get('/api/days', (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const days = getDaysData();
+  if (req.query.page) {
+    const start = (page - 1) * limit;
+    const slice = days.slice(start, start + limit);
+    return res.json({ days: slice, total: days.length, page, limit, hasMore: start + limit < days.length });
+  }
+  // Legacy: return all days for backward compatibility
   res.json(days);
 });
 
@@ -268,6 +297,7 @@ app.post('/api/day/:date/hide-photo', (req, res) => {
   data.photos[photoIndex].hidden = hide;
   data.photo_count = data.photos.filter(p => !p.hidden).length;
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  _daysCache = null; _citiesCache = null; // Invalidate caches
   // Add a system comment to trigger summary regeneration
   const comments = loadComments();
   if (!comments[date]) comments[date] = [];
@@ -293,6 +323,7 @@ app.put('/api/day/:date', (req, res) => {
   const daysDir = path.join(DATA_DIR, 'days');
   if (!fs.existsSync(daysDir)) fs.mkdirSync(daysDir, { recursive: true });
   fs.writeFileSync(path.join(daysDir, `${date}.json`), JSON.stringify(data, null, 2));
+  _daysCache = null; _citiesCache = null; // Invalidate caches
   res.json({ ok: true });
 });
 
