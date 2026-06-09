@@ -368,7 +368,8 @@ async function loadDayPhotos(date) {
   const visible = data.photos.map((p, idx) => ({...p, _idx: idx})).filter(p => !p.hidden);
   grid.innerHTML = visible.map(p => {
     const idx = p._idx;
-    const thumbSrc = `/photos/${date}/thumbs/${p.filename}`;
+    const blobBase = 'https://lifetimelinewesley.blob.core.windows.net/photos';
+    const thumbSrc = `${blobBase}/${date}/thumbs/${encodeURIComponent(p.filename)}`;
     const desc = p.analysis?.description || '';
     const photoComments = comments.filter(c => c.photoIndex === idx);
     const badge = photoComments.length ? `<div class="photo-comment-badge">${photoComments.length}</div>` : '';
@@ -446,9 +447,10 @@ function openLightbox(date, idx) {
 function showLbPhoto() {
   const p = currentLbPhotos[currentLbIndex];
   if (!p) return;
+  const blobBase = 'https://lifetimelinewesley.blob.core.windows.net/photos';
   const medName = p.filename.replace(/\.[^.]+$/, '.jpg');
-  const medSrc = `/photos/${currentLbDate}/medium/${medName}`;
-  const thumbSrc = `/photos/${currentLbDate}/thumbs/${p.filename}`;
+  const medSrc = `${blobBase}/${currentLbDate}/medium/${encodeURIComponent(medName)}`;
+  const thumbSrc = `${blobBase}/${currentLbDate}/thumbs/${encodeURIComponent(p.filename)}`;
   const img = document.getElementById('lb-img');
   img.src = medSrc;
   img.onerror = function() { this.onerror = null; this.src = thumbSrc; };
