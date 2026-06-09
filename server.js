@@ -82,8 +82,8 @@ const PHOTOS_DIR = path.join(DATA_BASE, 'photos');
 
 // Static files
 app.use('/static', express.static(path.join(__dirname, 'public')));
-// Photos are served from Azure Blob Storage (lifetimelinewesley.blob.core.windows.net/photos)
-// No longer served from App Service disk
+// Photos: primarily from Azure Blob Storage, App Service disk as fallback
+app.use('/photos', express.static(PHOTOS_DIR));
 
 // City extraction from photo addresses
 const CITY_MAP = {

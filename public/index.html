@@ -370,12 +370,13 @@ async function loadDayPhotos(date) {
     const idx = p._idx;
     const blobBase = 'https://lifetimelinewesley.blob.core.windows.net/photos';
     const thumbSrc = `${blobBase}/${date}/thumbs/${encodeURIComponent(p.filename)}`;
+    const fallbackSrc = `/photos/${date}/thumbs/${encodeURIComponent(p.filename)}`;
     const desc = p.analysis?.description || '';
     const photoComments = comments.filter(c => c.photoIndex === idx);
     const badge = photoComments.length ? `<div class="photo-comment-badge">${photoComments.length}</div>` : '';
     const locTag = p.metadata?.address ? `<div class="photo-loc">📍${p.metadata.address}</div>` : '';
     return `<div class="photo-item" onclick="openLightbox('${date}',${idx})">
-      <img src="${thumbSrc}" alt="${desc}" loading="lazy">
+      <img src="${thumbSrc}" onerror="this.onerror=null;this.src='${fallbackSrc}'" alt="${desc}" loading="lazy">
       ${badge}
       <div class="photo-caption"><div class="photo-time">${p.time}</div>${p.analysis?.activity||''}${locTag}</div>
     </div>`;
@@ -451,9 +452,21 @@ function showLbPhoto() {
   const medName = p.filename.replace(/\.[^.]+$/, '.jpg');
   const medSrc = `${blobBase}/${currentLbDate}/medium/${encodeURIComponent(medName)}`;
   const thumbSrc = `${blobBase}/${currentLbDate}/thumbs/${encodeURIComponent(p.filename)}`;
+  const fallbackMed = `/photos/${currentLbDate}/medium/${encodeURIComponent(medName)}`;
+  const fallbackThumb = `/photos/${currentLbDate}/thumbs/${encodeURIComponent(p.filename)}`;
   const img = document.getElementById('lb-img');
   img.src = medSrc;
-  img.onerror = function() { this.onerror = null; this.src = thumbSrc; };
+  img.onerror = function() {
+    if (this.src.includes('blob.core.windows.net') && this.src.includes('/medium/')) {
+      this.src = fallbackMed;
+    } else if (this.src.includes('/medium/')) {
+      this.src = thumbSrc;
+    } else if (this.src.includes('blob.core.windows.net')) {
+      this.src = fallbackThumb;
+    } else {
+      this.onerror = null;
+    }
+  };
   const loc = p.metadata?.address || p.analysis?.location || '';
   const locHtml = loc ? `<br>📍 ${loc}` : '';
   const gps = p.metadata?.gps;
